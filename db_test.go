@@ -20,6 +20,7 @@ func TestDb(t *testing.T) {
 	err = db.Set([]byte{}, []byte{0x00})
 	assert.Equal(ErrEmptyKey, err)
 
+	// test data
 	data := []struct {
 		key []byte
 		val []byte
@@ -38,14 +39,34 @@ func TestDb(t *testing.T) {
 		},
 	}
 
+	// set values
 	for _, d := range data {
 		err = db.Set(d.key, d.val)
 		assert.Nil(err)
 	}
+
 	var val []byte
+
+	// get not existing
+	for _, d := range data[len(data)-1:] {
+		val, err = db.Get(d.val)
+		assert.Equal(err, ErrNotFound)
+		assert.Nil(val)
+		break
+	}
+
+	// get existing
 	for _, d := range data {
 		val, err = db.Get(d.key)
 		assert.Nil(err)
 		assert.Equal(d.val, val)
 	}
+
+	// get deleted
+	for _, d := range data {
+		val, err = db.Get(d.key)
+		assert.Equal(err, ErrNotFound)
+		assert.Nil(val)
+	}
+
 }

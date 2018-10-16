@@ -14,7 +14,7 @@ const keyLen = 16
 type DBKey [keyLen]byte
 
 func hash(key []byte) (res DBKey, err error) {
-	if key == nil || len(key) < 1 {
+	if len(key) < 1 {
 		err = ErrEmptyKey
 		return
 	}

@@ -1,8 +1,13 @@
 package memkvdb
 
 import (
+	"errors"
 	"sync"
 	"time"
+)
+
+var (
+	ErrNotFound = errors.New("key not found")
 )
 
 type DB struct {
@@ -12,11 +17,13 @@ type DB struct {
 }
 
 func New(expiration time.Duration) (*DB, error) {
-	return &DB{
+	db := &DB{
 		expiration: expiration,
 		mutex:      sync.RWMutex{},
 		memstore:   make(map[DBKey][]byte),
 	}, nil
+
+	return db
 }
 
 func (db *DB) Set(key, val []byte) error {
@@ -41,5 +48,11 @@ func (db *DB) Get(key []byte) ([]byte, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	return db.memstore[hash], nil
+	val, ok := db.memstore[hash]
+	if !ok {
+		return nil, ErrNotFound
+	} else {
+		delete(db.memstore, hash)
+		return val, nil
+	}
 }
