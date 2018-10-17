@@ -1,6 +1,7 @@
 package memkvdb
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"time"
@@ -12,18 +13,18 @@ var (
 
 type DB struct {
 	expiration time.Duration
-	mutex      sync.RWMutex
+	mutex      sync.Mutex
 	memstore   map[DBKey][]byte
 }
 
 func New(expiration time.Duration) (*DB, error) {
 	db := &DB{
 		expiration: expiration,
-		mutex:      sync.RWMutex{},
+		mutex:      sync.Mutex{},
 		memstore:   make(map[DBKey][]byte),
-	}, nil
+	}
 
-	return db
+	return db, nil
 }
 
 func (db *DB) Set(key, val []byte) error {
@@ -36,6 +37,14 @@ func (db *DB) Set(key, val []byte) error {
 	defer db.mutex.Unlock()
 
 	db.memstore[hash] = val
+
+	// TTL
+	ctx, _ := context.WithTimeout(context.Background(), db.expiration)
+	go func() {
+		<-ctx.Done()
+		db.get(hash)
+	}()
+
 	return nil
 }
 
@@ -45,8 +54,12 @@ func (db *DB) Get(key []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	db.mutex.RLock()
-	defer db.mutex.RUnlock()
+	return db.get(hash)
+}
+
+func (db *DB) get(hash DBKey) ([]byte, error) {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
 
 	val, ok := db.memstore[hash]
 	if !ok {
