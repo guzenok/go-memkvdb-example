@@ -19,3 +19,36 @@
 ### Установка
 
 `go get github.com/guzenok/go-memkvdb-example`
+
+
+### Использование
+
+см. [полный пример](examples/console/main.go)
+
+
+```
+import (
+    db "github.com/guzenok/go-memkvdb-example"
+)
+```
+```
+    memcache, err := db.New(30*time.Second, db.CreateMapStore())
+    if err != nil {
+        panic(err)
+    }
+
+    key := []byte("index")
+    val := []byte("stored data")
+
+    err = memcache.Set(key, val)
+
+    val, err = memcache.Get(key)
+```
+
+
+### Тесты
+
+см. [Makefile](Makefile)
+
+`make test`
+`make bench`
