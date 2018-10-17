@@ -1,7 +1,7 @@
 package memkvdb
 
 import (
-	"crypto/md5"
+	"encoding/base64"
 	"errors"
 )
 
@@ -9,9 +9,7 @@ var (
 	ErrEmptyKey = errors.New("key is empty")
 )
 
-const keyLen = 16
-
-type DBKey [keyLen]byte
+type DBKey string
 
 func hash(key []byte) (res DBKey, err error) {
 	if len(key) < 1 {
@@ -19,12 +17,6 @@ func hash(key []byte) (res DBKey, err error) {
 		return
 	}
 
-	hasher := md5.New()
-	_, err = hasher.Write(key)
-	if err != nil {
-		return
-	}
-	h := hasher.Sum(nil)
-	copy(res[:], h[0:keyLen])
+	res = DBKey(base64.StdEncoding.EncodeToString(key))
 	return
 }
