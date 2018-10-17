@@ -25,7 +25,7 @@ func BenchmarkDbSync(b *testing.B) {
 		"SyncMap": CreateSyncMapStore()} {
 		b.Run(name, func(b *testing.B) {
 
-			expiration := 30 * time.Second
+			expiration := 300 * time.Millisecond
 			db, err := New(expiration, store)
 
 			b.ResetTimer()
@@ -41,10 +41,7 @@ func BenchmarkDbSync(b *testing.B) {
 					continue
 				}
 
-				_, err = db.Get(key)
-				if err != nil {
-					b.Fatal(err)
-				}
+				_, _ = db.Get(key)
 			}
 		})
 	}
@@ -59,8 +56,8 @@ func BenchmarkDbAsync(b *testing.B) {
 		"SyncMap": CreateSyncMapStore()} {
 		b.Run(name, func(b *testing.B) {
 
-			expiration := 30 * time.Second
-			db, err := New(expiration, store)
+			expiration := 300 * time.Millisecond
+			db, _ := New(expiration, store)
 			wg := &sync.WaitGroup{}
 
 			b.ResetTimer()
@@ -74,7 +71,7 @@ func BenchmarkDbAsync(b *testing.B) {
 
 					for j := 0; j < 2*READ_RATE; j++ {
 						key[i%KEY_LEN] = byte(rand.Int())
-						err = db.Set(key, val)
+						err := db.Set(key, val)
 						if err != nil {
 							b.Fatal(err)
 						}
@@ -83,10 +80,7 @@ func BenchmarkDbAsync(b *testing.B) {
 							continue
 						}
 
-						_, err = db.Get(key)
-						if err != nil {
-							b.Fatal(err)
-						}
+						_, _ = db.Get(key)
 					}
 				}(i)
 			}

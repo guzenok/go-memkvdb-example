@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("key not found")
+	ErrNotFound      = errors.New("key not found")
+	ErrStoreRequired = errors.New("store required")
 )
 
 type MemStore interface {
@@ -22,6 +23,9 @@ type DB struct {
 }
 
 func New(expiration time.Duration, store MemStore) (*DB, error) {
+	if store == nil {
+		return nil, ErrStoreRequired
+	}
 	db := &DB{
 		expiration: expiration,
 		store:      store,

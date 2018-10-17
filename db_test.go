@@ -107,7 +107,7 @@ func TestTTL(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 
 			expiration := 200 * time.Millisecond
-			wait_time := 210 * time.Millisecond
+			wait_time := 220 * time.Millisecond
 
 			assert := assert.New(t)
 			db := initDB(assert, expiration, store)
