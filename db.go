@@ -13,6 +13,7 @@ var (
 type MemStore interface {
 	Set(key DBKey, val []byte) error
 	Get(key DBKey) ([]byte, error)
+	Del(key DBKey)
 }
 
 type DB struct {
@@ -50,7 +51,7 @@ func (db *DB) Set(key, val []byte) error {
 	ctx, _ := context.WithTimeout(context.Background(), db.expiration)
 	go func() {
 		<-ctx.Done()
-		db.store.Get(hash)
+		db.store.Del(hash)
 	}()
 
 	return nil

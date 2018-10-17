@@ -37,3 +37,10 @@ func (s *MapStore) Get(key DBKey) ([]byte, error) {
 		return val, nil
 	}
 }
+
+func (s *MapStore) Del(key DBKey) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	delete(s.mem, key)
+}

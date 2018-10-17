@@ -28,3 +28,7 @@ func (s *SyncMapStore) Get(key DBKey) ([]byte, error) {
 		return val.([]byte), nil
 	}
 }
+
+func (s *SyncMapStore) Del(key DBKey) {
+	s.mem.Delete(key)
+}
