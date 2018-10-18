@@ -3,7 +3,7 @@
 тестовое задание
 
 
-### Задание
+## Задание
 
 Необходимо реализовать hot key-value хранилище в памяти без использования субд, а с использованием map.
 Основные требования:
@@ -16,15 +16,27 @@
 7. Большим плюсом будет решение с использованием context.WithTimeout, а не time.After.
 
 
+## Решение
+
+
 ### Установка
 
 `go get github.com/guzenok/go-memkvdb-example`
 
 
-### Использование
+### Пример API к хранилищу (сервис)
 
-см. [полный пример](examples/console/main.go)
+```
+go run github.com/guzenok/go-memkvdb-example/examples/service &
+./examples/service/client.sh
+kill %1
 
+```
+
+
+### Использование хранилища как библиотеки
+
+см. [код в examples/console](examples/console/main.go)
 
 ```
 import (
@@ -33,20 +45,16 @@ import (
 ```
 ```
     memcache, err := db.New(30*time.Second, db.CreateMapStore())
-    if err != nil {
-        panic(err)
-    }
 
     key := []byte("index")
     val := []byte("stored data")
 
     err = memcache.Set(key, val)
-
     val, err = memcache.Get(key)
 ```
 
 
-### Тесты
+### Тесты и бенчмарки хранилища
 
 см. [Makefile](Makefile)
 
