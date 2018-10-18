@@ -26,6 +26,8 @@
 
 ### Пример API к хранилищу (сервис)
 
+см. [код в examples/service](examples/service)
+
 ```
 go run github.com/guzenok/go-memkvdb-example/examples/service &
 ./examples/service/client.sh
