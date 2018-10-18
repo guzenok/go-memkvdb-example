@@ -3,19 +3,35 @@
 package restapi
 
 import (
+	"bytes"
 	"crypto/tls"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"time"
 
 	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
+	//	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
-	"github.com/guzenok/go-memkvdb-example/examples/service/gen/restapi/operations"
+	"github.com/guzenok/go-memkvdb-example/examples/service/restapi/operations"
+
+	db "github.com/guzenok/go-memkvdb-example"
 )
 
-//go:generate swagger generate server --target ../examples/service/gen --name service --spec ../examples/service/swagger.yml
+var storage *db.DB
+
+func init() {
+	var err error
+	storage, err = db.NewDefault(30 * time.Second)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+//go:generate swagger generate server --target ../examples/service/gen --name service --spec ../examples/service/swagger.yml --exclude-main
 
 func configureFlags(api *operations.ServiceAPI) {
-	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{...}
 }
 
 func configureAPI(api *operations.ServiceAPI) http.Handler {
@@ -28,18 +44,40 @@ func configureAPI(api *operations.ServiceAPI) http.Handler {
 	// Example:
 	// api.Logger = log.Printf
 
-	api.BinConsumer = runtime.ByteStreamConsumer()
+	//api.JSONConsumer = runtime.JSONConsumer()
 
-	api.BinProducer = runtime.ByteStreamProducer()
+	//api.JSONProducer = runtime.JSONProducer()
 
 	api.GetValuesKeyHandler = operations.GetValuesKeyHandlerFunc(func(params operations.GetValuesKeyParams) middleware.Responder {
-		return middleware.NotImplemented("operation .GetValuesKey has not yet been implemented")
-	})
-	api.PostValuesKeyHandler = operations.PostValuesKeyHandlerFunc(func(params operations.PostValuesKeyParams) middleware.Responder {
-		return middleware.NotImplemented("operation .PostValuesKey has not yet been implemented")
+		val, err := storage.Get([]byte(params.Key))
+		if err == db.ErrNotFound {
+			return operations.NewGetValuesKeyNotFound()
+		}
+		if err != nil {
+			log.Println(err)
+			return operations.NewGetValuesKeyDefault(500)
+		}
+
+		res := ioutil.NopCloser(bytes.NewReader(val))
+		return operations.NewGetValuesKeyOK().WithPayload(res)
 	})
 
-	api.ServerShutdown = func() {}
+	api.PostValuesKeyHandler = operations.PostValuesKeyHandlerFunc(func(params operations.PostValuesKeyParams) middleware.Responder {
+		val, err := ioutil.ReadAll(params.Value)
+		if err != nil {
+			log.Println(err)
+			return operations.NewGetValuesKeyDefault(400)
+		}
+
+		err = storage.Set([]byte(params.Key), val)
+		if err != nil {
+			log.Println(err)
+			return operations.NewPostValuesKeyDefault(500)
+		}
+		return operations.NewPostValuesKeyOK()
+	})
+
+	// api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
@@ -54,6 +92,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
+	return
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

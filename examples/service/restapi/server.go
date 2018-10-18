@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-openapi/runtime/flagext"
 	"github.com/go-openapi/swag"
-	"github.com/guzenok/go-memkvdb-example/examples/service/gen/restapi/operations"
+	"github.com/guzenok/go-memkvdb-example/examples/service/restapi/operations"
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
 )

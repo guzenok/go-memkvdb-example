@@ -6,7 +6,8 @@ all: build
 build:
 	go get github.com/go-swagger/go-swagger/cmd/swagger
 	swagger generate server -A service \
-	 -t examples/service/gen \
+	 --exclude-main \
+	 -t examples/service \
 	 -f examples/service/swagger.yml
 	go get ./...
 	go build .

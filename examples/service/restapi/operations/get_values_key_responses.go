@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	models "github.com/guzenok/go-memkvdb-example/examples/service/gen/models"
+	models "github.com/guzenok/go-memkvdb-example/examples/service/models"
 )
 
 // GetValuesKeyOKCode is the HTTP code returned for type GetValuesKeyOK
